@@ -1,14 +1,7 @@
 import NodeGeocoder from "node-geocoder";
-import inside from "point-in-polygon";
-import tj from "@mapbox/togeojson";
-import fs from "fs";
-import { DOMParser } from "xmldom";
 
-const deliveryAreasKml = new DOMParser().parseFromString(
-    fs.readFileSync(__dirname + "/../../FullStackTest_DeliveryAreas.kml", "utf8")
-);
-const deliveryAreas = tj.kml(deliveryAreasKml);
-const deliveryAreasPolygons = deliveryAreas.features.filter((data: any) => data.geometry.type === "Polygon");
+import { DeliveryArea } from "../database/models/DeliveryArea";
+
 
 const geocoder = NodeGeocoder({
     provider: "opencage",
@@ -18,9 +11,9 @@ const geocoder = NodeGeocoder({
 
 
 /**
-* Convert the adress as a string to plain corrdinates
+* Convert the address as a string to plain coordinates
 *
-* @param {String} adressName
+* @param {String} addressName
 */
 export const getOutlet = async (addressName: string) => {
     const [addressCoordinates] = await geocoder.geocode(addressName);
@@ -28,13 +21,15 @@ export const getOutlet = async (addressName: string) => {
         throw new Error("address not found");
     }
     const firstMatch = [addressCoordinates.longitude || 0, addressCoordinates.latitude || 0];
-    const result = deliveryAreasPolygons.find((placeMark: any) => {
-        const [polygon] = placeMark.geometry.coordinates;
-        return inside(firstMatch, polygon);
-    });
-    if(!result || !result.properties){
+    const result = await DeliveryArea.findOne({
+        geometry: {
+          $geoIntersects: {
+            $geometry: { type: "Point", coordinates: firstMatch }
+          },
+        },
+      });
+    if (!result) {
         throw new Error("polygen not found");
-
     }
-    return result.properties;
+    return result;
 };

@@ -6,13 +6,8 @@
 2. npm install
 3. npm start
 
-### client
-directory: /client
-
-
-### server
 
 # Preview
 [Click here](https://honest-behnam.herokuapp.com/)
 
-
+    

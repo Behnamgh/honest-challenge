@@ -3,6 +3,7 @@ import bodyParser from "body-parser";
 import cors from "cors";
 import path from "path";
 import geoRoutes from "./routes/geo";
+import "./database";
 
 const app = express();
 const publicFolderPath = path.join(__dirname, "../public");
@@ -11,8 +12,8 @@ const clientPath = path.join(__dirname, "../client/build");
 app.set("port", process.env.PORT || 3000);
 app.use(
   bodyParser.json({
-    limit: "5mb",
-  }),
+    limit: "5mb"
+  })
 );
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cors({ origin: true, credentials: true }));
